@@ -128,7 +128,71 @@ function createNoteElement(note) {
     li.appendChild(bodyEl);
   }
 
+  // Task 3: Note action row with Delete button
+  const actionsRow = document.createElement('div');
+  actionsRow.className = 'note-actions';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.className = 'delete-btn';
+  deleteBtn.textContent = 'Delete';
+  deleteBtn.setAttribute('aria-label', `Delete note ${note.id}`);
+
+  deleteBtn.addEventListener('click', () => {
+    deleteNote(note.id, li);
+  });
+
+  actionsRow.appendChild(deleteBtn);
+  li.appendChild(actionsRow);
+
   return li;
+}
+
+/**
+ * Task 3: Delete note via DELETE request
+ *
+ * JSONPlaceholder Mock API Persistency Approach:
+ * JSONPlaceholder (https://jsonplaceholder.typicode.com) is a fake online REST API
+ * built for testing and prototyping. It simulates CRUD operations without persisting
+ * data: POST requests return mock IDs (e.g., id 101) without writing to a backend database,
+ * and DELETE requests return status 200 OK without removing persistent server records.
+ *
+ * Approach:
+ * 1. We send a real HTTP DELETE request to `https://jsonplaceholder.typicode.com/posts/${id}`.
+ * 2. On success, we update the client-side UI by removing the note DOM element.
+ * 3. If removing this note leaves the list empty, we automatically render the empty state.
+ * 4. If the network request fails, the DOM element is preserved and an error message is displayed.
+ *
+ * @param {number|string} id - The note ID to delete
+ * @param {HTMLLIElement} noteElement - The DOM element representing the note
+ */
+async function deleteNote(id, noteElement) {
+  setStatus('loading', `Deleting note #${id}...`);
+  setButtonsDisabled(true);
+
+  try {
+    // Send DELETE request to JSONPlaceholder endpoint
+    await request(`${API_URL}/${id}`, {
+      method: 'DELETE'
+    });
+
+    // Remove the note element from the DOM
+    if (noteElement && noteElement.parentNode) {
+      noteElement.remove();
+    }
+
+    // Check if the list is now empty and render empty state if so
+    if (notesList.children.length === 0) {
+      renderEmptyState();
+    }
+
+    setStatus('success', `Note with ID #${id} deleted successfully.`);
+  } catch (error) {
+    console.error(`Error deleting note #${id}:`, error);
+    setStatus('error', `Failed to delete note #${id}. Please try again.`);
+  } finally {
+    setButtonsDisabled(false);
+  }
 }
 
 /**
