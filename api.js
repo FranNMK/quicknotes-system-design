@@ -33,10 +33,14 @@ async function request(url, options = {}) {
 
   // Handle 204 No Content responses gracefully
   if (response.status === 204) {
-    return {};
+    return { _status: 204 };
   }
 
-  return await response.json();
+  const data = await response.json();
+  if (data && typeof data === 'object') {
+    data._status = response.status;
+  }
+  return data;
 }
 
 /**
@@ -164,6 +168,78 @@ async function loadNotes() {
   }
 }
 
+/**
+ * Task 2: Create a new note via POST request
+ * Validates inputs: title is required, max 100 characters; body is optional
+ *
+ * @param {SubmitEvent} event
+ */
+async function createNote(event) {
+  event.preventDefault();
+
+  const title = titleInput.value.trim();
+  const body = bodyInput.value.trim();
+
+  // Validation: title is required
+  if (!title) {
+    setStatus('error', 'Validation Error: Note title is required.');
+    titleInput.focus();
+    return;
+  }
+
+  // Validation: title maximum 100 characters
+  if (title.length > 100) {
+    setStatus('error', 'Validation Error: Title must not exceed 100 characters.');
+    titleInput.focus();
+    return;
+  }
+
+  setStatus('loading', 'Creating note on the server...');
+  setButtonsDisabled(true);
+
+  try {
+    const payload = {
+      title,
+      body,
+      userId: 1
+    };
+
+    const newNote = await request(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    // Remove empty-state placeholder if present before prepending
+    const emptyState = notesList.querySelector('.empty-state');
+    if (emptyState) {
+      emptyState.remove();
+    }
+
+    // Add returned note to the top of the list
+    const noteEl = createNoteElement(newNote);
+    notesList.prepend(noteEl);
+
+    // Show status code and new id
+    const statusCode = newNote._status || 201;
+    setStatus('success', `Note created (status ${statusCode}, id ${newNote.id}).`);
+
+    // Clear form and reset counter
+    noteForm.reset();
+    if (titleCharCounter) {
+      titleCharCounter.textContent = '0';
+    }
+  } catch (error) {
+    console.error('Error creating note:', error);
+    setStatus('error', 'Failed to create note. Please check your network connection and try again.');
+  } finally {
+    setButtonsDisabled(false);
+  }
+}
+
 // Live character counter for note title
 if (titleInput && titleCharCounter) {
   titleInput.addEventListener('input', () => {
@@ -171,9 +247,13 @@ if (titleInput && titleCharCounter) {
   });
 }
 
-// Initial event listener for Task 1
+// Event listeners for Task 1 and Task 2
 if (loadBtn) {
   loadBtn.addEventListener('click', loadNotes);
+}
+
+if (noteForm) {
+  noteForm.addEventListener('submit', createNote);
 }
 
 // Display initial empty state on page load
