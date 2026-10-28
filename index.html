@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="QuickNotes API Client and System Design Architecture Demo">
+  <title>QuickNotes - API Client & System Design</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="api.js" defer></script>
+</head>
+<body>
+  <div class="app-wrapper">
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="logo-icon">📝</div>
+        <div>
+          <h1>QuickNotes</h1>
+          <p class="subtitle">API Client &amp; 1M-User Distributed System Architecture</p>
+        </div>
+      </div>
+      <nav class="nav-links">
+        <a href="docs/api-design.md" class="doc-link">API Design</a>
+        <a href="docs/data-model.md" class="doc-link">Data Model</a>
+        <a href="docs/architecture.md" class="doc-link">Architecture</a>
+      </nav>
+    </header>
+
+    <main class="main-container">
+      <!-- Create Note Section -->
+      <section class="card form-card">
+        <h2>Create a Note</h2>
+        <p class="section-desc">Add a new note to test simulated POST requests.</p>
+        
+        <form id="note-form" novalidate>
+          <div class="form-group">
+            <label for="title-input">
+              Title <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="title-input" 
+              name="title" 
+              placeholder="e.g. System Design Meeting Notes" 
+              maxlength="100"
+              autocomplete="off"
+            >
+            <small class="char-count"><span id="title-char-counter">0</span>/100 characters</small>
+          </div>
+
+          <div class="form-group">
+            <label for="body-input">Body (optional)</label>
+            <textarea 
+              id="body-input" 
+              name="body" 
+              rows="4" 
+              placeholder="Write your note content here..."
+            ></textarea>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            Create Note
+          </button>
+        </form>
+      </section>
+
+      <!-- Notes Explorer Section -->
+      <section class="card notes-card">
+        <div class="notes-header">
+          <div>
+            <h2>Notes Feed</h2>
+            <p class="section-desc">Browse and manage notes synced with the server.</p>
+          </div>
+          <button type="button" id="load-btn" class="btn btn-secondary">
+            Load notes
+          </button>
+        </div>
+
+        <!-- Status message container for loading, success, and error states -->
+        <p id="status" class="status-box" role="status" aria-live="polite"></p>
+
+        <!-- Dynamic Notes List -->
+        <ul id="notes-list"></ul>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <p>QuickNotes System Design Project &bull; Built with standard HTML5, CSS3, &amp; Vanilla JavaScript</p>
+    </footer>
+  </div>
+</body>
+</html>
